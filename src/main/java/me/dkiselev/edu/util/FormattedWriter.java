@@ -1,4 +1,4 @@
-package me.dkiselev.edu.cesar;
+package me.dkiselev.edu.util;
 
 import java.io.IOException;
 import java.io.Writer;

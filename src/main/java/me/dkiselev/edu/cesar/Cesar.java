@@ -12,6 +12,9 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 
+import me.dkiselev.edu.util.FormattedWriter;
+import me.dkiselev.edu.util.SanitizeBufferedReader;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -23,8 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Cesar {
 
-	private static final String RU_ALPHABETH = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
-	private static final String EN_ALPHABETH = "abcdefghijklmnopqrstuvwxyz";
+	public static final String RU_ALPHABETH = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
+	public static final String EN_ALPHABETH = "abcdefghijklmnopqrstuvwxyz";
 	
 	
 	public static void main(String[] args) {
@@ -35,7 +38,7 @@ public class Cesar {
 		try {
 			
 			if(args.length == 0) {
-				System.err.println("Warn, reading from stdin. Use Ctrl+C to brake.");
+				System.err.println("Encoding from stdin to stdout. Use Ctrl+C to brake.");
 			}
 			
 			CommandLine cmd = parser.parse( options, args);
@@ -156,7 +159,7 @@ public class Cesar {
 		while(line != null) {
 			
 			if(StringUtils.isNotBlank(line)) {
-				char[] shiftString = shiftString(line.toCharArray(), shift);
+				char[] shiftString = shiftString(line.toCharArray(), shift, preserveCase, alphabeth);
 				
 				writer.write(shiftString);
 				
@@ -172,18 +175,21 @@ public class Cesar {
 		String line = reader.readLine();
 		while(line != null) {
 			
-			writer.write(shiftString(line.toCharArray(), -shift));
+			writer.write(shiftString(line.toCharArray(), -shift, preserveCase, alphabeth));
 			writer.write("\n");
 			line = reader.readLine();
 		}
 	}
 
-	private char[] shiftString(char[] string, int shift) {
+	public static char[] shiftString(char[] string, int shift, 
+			boolean preserveCase, char[] alphabeth) {
+		
 		char[] result = new char[string.length];
 		int i = 0;
 		for(char c : string) {
 			result[i++] = transformChar(shift, c, preserveCase, alphabeth);
 		}
+		
 		return result;
 	}
 

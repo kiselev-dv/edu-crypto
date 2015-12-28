@@ -1,4 +1,4 @@
-package me.dkiselev.edu.cesar;
+package me.dkiselev.edu.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,10 +23,10 @@ public class SanitizeBufferedReader extends BufferedReader {
 		if(line == null) {
 			return null;
 		}
-		return sanitizeLine(line);
+		return sanitizeLine(line, alphabeth);
 	}
 	
-	private String sanitizeLine(String line) {
+	public static String sanitizeLine(String line, char[] alphabeth) {
 		String sanitized = StringUtils.lowerCase(line);
 		sanitized = StringUtils.replaceChars(sanitized, "ё", "е");
 		
