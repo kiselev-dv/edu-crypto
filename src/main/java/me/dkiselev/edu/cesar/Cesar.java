@@ -37,11 +37,17 @@ public class Cesar {
 		CommandLineParser parser = new DefaultParser();
 		try {
 			
+			
 			if(args.length == 0) {
 				System.err.println("Encoding from stdin to stdout. Use Ctrl+C to brake.");
 			}
 			
 			CommandLine cmd = parser.parse( options, args);
+			if(cmd.hasOption("h")) {
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp( "encription.jar cesar", options );
+				return;
+			}
 			
 			String alphabetString = parseAlphabeth(cmd);
 
@@ -86,10 +92,13 @@ public class Cesar {
 			System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
 			
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp( "cesar", options );
+			formatter.printHelp( "encription.jar cesar", options );
 		}
 		catch (FileNotFoundException fnf) {
 			System.err.println( fnf.getMessage() );
+		}
+		catch (NumberFormatException nfe) {
+			System.err.println( "Пароль должен быть целым числом." );
 		}
 		catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -290,6 +299,8 @@ public class Cesar {
 	private static Options getOptions() {
 		
 		Options options = new Options();
+		
+		options.addOption("h", "help", false, "Display help.");
 		
 		options.addOption("a", "alphabet", true, "String with alphabet to use.");
 		options.addOption("d", "decrypt", false, "Decrypt, default action is encrypt.");

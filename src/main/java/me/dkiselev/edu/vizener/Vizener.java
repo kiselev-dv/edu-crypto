@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.TreeSet;
 
 import me.dkiselev.edu.cesar.Cesar;
 import me.dkiselev.edu.util.FormattedWriter;
@@ -81,15 +79,17 @@ public class Vizener {
 	public static void main(String[] args) {
 		Options options = getOptions();
 		
-		if(args.length == 0) {
-			System.err.println("Encoding from stdin to stdout. Use Ctrl+C to brake.");
-		}
-		
 		CommandLineParser parser = new DefaultParser();
 		
 		try {
 			
 			CommandLine cmd = parser.parse( options, args);
+			
+			if(cmd.hasOption("h") || args.length == 0) {
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp( "encription.jar vizener", options );
+				return;
+			}
 			
 			String alphabetString = Cesar.parseAlphabeth(cmd);
 
@@ -112,7 +112,7 @@ public class Vizener {
 				String password = analyzer.tryBreak(reader);
 				
 				if(password != null) {
-					System.err.println("Password is: " + password);
+					System.err.println("Пароль: " + password);
 					writer.write(analyzer.getOriginalMessage());
 				}
 				else {
@@ -144,13 +144,18 @@ public class Vizener {
 			}
 			
 			reader.close();
+			
+			if(writer instanceof FormattedWriter) {
+				((FormattedWriter) writer).newLine();
+			}
+			
 			writer.close();
 			
 		} catch (ParseException exp) {
 			System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
 			
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp( "cesar", options );
+			formatter.printHelp( "encription.jar vizener", options  );
 		}
 		catch (FileNotFoundException fnf) {
 			System.err.println( fnf.getMessage() );
@@ -164,24 +169,21 @@ public class Vizener {
 		
 		String password = cmd.getOptionValue("p");
 		if(password == null) {
-			System.err.println("Password not provided");
+			System.err.println("Пароль не указан.");
 			return null;
 		}
 		
-		password = sanitizePassword(password);
-		if(password.length() < 6) {
-			System.err.println("Password is too short.");
+		password = StringUtils.replaceChars(password, 'ё', 'е').toLowerCase();
+		String sanitized = sanitizePassword(password);
+		
+		if(!sanitized.equals(password)) {
+			System.err.println("Пароль содержит недопустимые символы. "
+					+ "Допустимы только символы русского алфавита от а до я. "
+					+ "Символ ё автоматически заменяется на е.");
 			return null;
 		}
 		
-		TreeSet<Character> chars = new TreeSet<Character>();
-		chars.addAll(Arrays.asList(ArrayUtils.toObject(password.toCharArray())));
-		if(password.length() - chars.size() > 4) {
-			System.err.println("Password has more than 4 simmilar characters.");
-			return null;
-		}
-		
-		return password;
+		return sanitized;
 	}
 	
 	private static String sanitizePassword(String password) {
@@ -205,15 +207,16 @@ public class Vizener {
 		
 		Options options = new Options();
 		
-		options.addOption("a", "alphabet", true, "String with alphabet to use");
-		options.addOption("d", "decrypt", false, "Decrypt");
-		options.addOption("b", "break", false, "Break encrypted text");
+		options.addOption("h", "help", false, "Справка");
+
+		options.addOption("a", "alphabet", true, "Алфавит");
+		options.addOption("d", "decrypt", false, "Режим расшифровки.");
+		options.addOption("b", "break", false, "Режим взлома.");
 		options.addOption("c", "preserve-case", false, "Preserve casing");
-		options.addOption("p", "pass", true, "Password");
-		options.addOption("i", "in", true, "Source");
-		options.addOption("o", "out", true, "Output");
-		options.addOption("m", "max-analyze-tryes", true, "How many analyzes to perform, "
-				+ "while breaking encrypted text");
+		options.addOption("p", "pass", true, "Пароль");
+		options.addOption("i", "in", true, "Источник (используйте - для стандартного ввода)");
+		options.addOption("o", "out", true, "Назначение (используйте - для стандартного ввода)");
+		options.addOption("m", "max-analyze-tryes", true, "Ограничение числа попыток для подстановки длин ключа.");
 		
 		return options;
 	}
